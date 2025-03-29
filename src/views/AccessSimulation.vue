@@ -1,0 +1,48 @@
+<template>
+  <div>
+    <h2 class="text-2xl font-bold mb-6 text-blue-800">Simular Acceso</h2>
+    <form @submit.prevent="simulateAccess" class="bg-white p-6 rounded-lg shadow-lg">
+      <div class="mb-4">
+        <label class="block text-gray-700">ID Interno</label>
+        <input v-model="internalId" type="text" class="w-full p-2 border rounded" required />
+      </div>
+      <button type="submit" class="bg-blue-800 text-white p-2 rounded hover:bg-blue-900">
+        Simular
+      </button>
+    </form>
+    <p v-if="result" class="mt-4 text-center" :class="result.status === 'Access Granted' ? 'text-green-500' : 'text-red-500'">
+      {{ result.status }}
+    </p>
+    <p v-if="error" class="mt-4 text-red-500 text-center">{{ error }}</p>
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      internalId: '',
+      result: null,
+      error: '',
+    };
+  },
+  methods: {
+    async simulateAccess() {
+      try {
+        const response = await axios.post(
+          'http://localhost/room-911-backend/public/api/v1/access-attempts/simulate',
+          { internal_id: this.internalId },
+          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        );
+        this.result = response.data;
+        this.error = '';
+      } catch (error) {
+        this.error = error.response?.data?.error || 'Error al simular acceso';
+        this.result = null;
+      }
+    },
+  },
+};
+</script>
