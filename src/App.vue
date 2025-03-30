@@ -8,6 +8,10 @@
 <script>
 import Navbar from './components/Navbar.vue';
 
+/**
+ * Root component of the Room 911 application.
+ * Renders the navigation bar and the current route view.
+ */
 export default {
   components: { Navbar },
 };

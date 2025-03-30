@@ -1,29 +1,29 @@
 <template>
   <div>
-    <h2 class="text-2xl font-bold mb-6 text-blue-800">Gestión de Empleados</h2>
+    <h2 class="text-2xl font-bold mb-6 text-blue-800">Employee Management</h2>
     <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
-      <h3 class="text-lg font-semibold mb-4">Editar Empleado</h3>
+      <h3 class="text-lg font-semibold mb-4">Edit Employee</h3>
       <form @submit.prevent="updateEmployee" enctype="multipart/form-data">
         <div class="mb-4">
-          <label class="block text-gray-700">ID Interno</label>
+          <label class="block text-gray-700">Internal ID</label>
           <input v-model="employee.internal_id" type="text" class="w-full p-2 border rounded" required />
         </div>
         <div class="mb-4">
-          <label class="block text-gray-700">Nombre</label>
+          <label class="block text-gray-700">First Name</label>
           <input v-model="employee.first_name" type="text" class="w-full p-2 border rounded" required />
         </div>
         <div class="mb-4">
-          <label class="block text-gray-700">Apellido</label>
+          <label class="block text-gray-700">Last Name</label>
           <input v-model="employee.last_name" type="text" class="w-full p-2 border rounded" required />
         </div>
         <div class="mb-4">
-          <label class="block text-gray-700">Departamento</label>
+          <label class="block text-gray-700">Department</label>
           <v-select
             v-model="employee.production_department_id"
             :options="departments"
             label="name"
             :reduce="dept => dept.id"
-            placeholder="Selecciona un departamento"
+            placeholder="Select a department"
             class="w-full"
             required
           >
@@ -36,20 +36,20 @@
           </v-select>
         </div>
         <div class="mb-4">
-          <label class="block text-gray-700">Acceso a Room 911</label>
+          <label class="block text-gray-700">Room 911 Access</label>
           <input v-model="employee.has_room_911_access" type="checkbox" class="mt-2" />
         </div>
         <div class="mb-4">
-          <label class="block text-gray-700">Foto</label>
+          <label class="block text-gray-700">Photo</label>
           <input type="file" @change="onFileChange" accept="image/*" class="w-full p-2" />
-          <img v-if="employee.photo_url" :src="employee.photo_url" alt="Foto actual" class="mt-2 w-24 h-24 object-cover" />
+          <img v-if="employee.photo_url" :src="employee.photo_url" alt="Current photo" class="mt-2 w-24 h-24 object-cover" />
         </div>
         <div class="flex justify-end space-x-4">
           <router-link to="/employees" class="bg-gray-500 text-white p-2 rounded hover:bg-gray-600">
-            Cancelar
+            Cancel
           </router-link>
           <button type="submit" class="bg-blue-800 text-white p-2 rounded hover:bg-blue-900">
-            Guardar
+            Save
           </button>
         </div>
       </form>
@@ -61,9 +61,13 @@
 import axios from 'axios';
 import VueSelect from 'vue-select';
 
+/**
+ * EditEmployee view for updating an existing employee's details.
+ * Allows editing fields and uploading a new photo.
+ */
 export default {
   components: {
-    'v-select': VueSelect, // Registra vue-select localmente en esta vista
+    'v-select': VueSelect,
   },
   data() {
     return {
@@ -85,6 +89,10 @@ export default {
     await this.fetchEmployee();
   },
   methods: {
+    /**
+     * Fetches the list of departments from the backend API.
+     * @async
+     */
     async fetchDepartments() {
       try {
         const response = await axios.get(
@@ -96,10 +104,14 @@ export default {
         this.$swal({
           icon: 'error',
           title: 'Error',
-          text: 'Error al cargar departamentos',
+          text: 'Error loading departments',
         });
       }
     },
+    /**
+     * Fetches the details of the employee to edit based on route params.
+     * @async
+     */
     async fetchEmployee() {
       const employeeId = this.$route.params.id;
       try {
@@ -112,16 +124,20 @@ export default {
         this.$swal({
           icon: 'error',
           title: 'Error',
-          text: 'Error al cargar datos del empleado',
+          text: 'Error loading employee data',
         });
       }
     },
+    /**
+     * Updates the employee's details and submits changes to the backend API.
+     * @async
+     */
     async updateEmployee() {
       if (!this.employee.production_department_id) {
         this.$swal({
           icon: 'warning',
-          title: 'Advertencia',
-          text: 'Por favor, selecciona un departamento',
+          title: 'Warning',
+          text: 'Please select a department',
         });
         return;
       }
@@ -149,17 +165,21 @@ export default {
         );
         this.$swal({
           icon: 'success',
-          title: 'Éxito',
-          text: 'Empleado actualizado con éxito',
+          title: 'Success',
+          text: 'Employee updated successfully',
         }).then(() => this.$router.push('/employees'));
       } catch (error) {
         this.$swal({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.error || 'Error al actualizar empleado',
+          text: error.response?.data?.error || 'Error updating employee',
         });
       }
     },
+    /**
+     * Updates the employee's photo when a new file is selected.
+     * @param {Event} event - The file input change event
+     */
     onFileChange(event) {
       this.employee.photo = event.target.files[0];
     },
@@ -168,7 +188,7 @@ export default {
 </script>
 
 <style>
-/* Ajustes básicos para vue-select */
+/* Basic adjustments for vue-select */
 .v-select {
   min-width: 100%;
 }

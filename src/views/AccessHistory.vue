@@ -1,16 +1,16 @@
 <template>
   <div>
-    <h2 class="text-2xl font-bold mb-6 text-blue-800">Historial de Accesos</h2>
+    <h2 class="text-2xl font-bold mb-6 text-blue-800">Access History</h2>
     <form @submit.prevent="fetchHistory" class="bg-white p-6 rounded-lg shadow-lg mb-6">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label class="block text-gray-700">Empleado</label>
+          <label class="block text-gray-700">Employee</label>
           <v-select
             v-model="selectedEmployee"
             :options="employees"
             label="fullName"
             :reduce="employee => employee.id"
-            placeholder="Selecciona un empleado"
+            placeholder="Select an employee"
             class="w-full"
             required
           >
@@ -23,19 +23,19 @@
           </v-select>
         </div>
         <div>
-          <label class="block text-gray-700">Fecha Inicio</label>
+          <label class="block text-gray-700">Start Date</label>
           <input v-model="startDate" type="date" class="w-full p-2 border rounded" />
         </div>
         <div>
-          <label class="block text-gray-700">Fecha Fin</label>
+          <label class="block text-gray-700">End Date</label>
           <input v-model="endDate" type="date" class="w-full p-2 border rounded" />
         </div>
       </div>
       <button type="submit" class="mt-4 bg-blue-800 text-white p-2 rounded hover:bg-blue-900">
-        Buscar
+        Search
       </button>
       <button @click="downloadPdf" type="button" class="mt-4 ml-4 bg-green-600 text-white p-2 rounded hover:bg-green-700">
-        Descargar PDF
+        Download PDF
       </button>
     </form>
 
@@ -48,19 +48,23 @@
         :sort-options="{ enabled: true }"
       >
         <template #emptystate>
-          No se encontraron intentos.
+          No access attempts found.
         </template>
       </vue-good-table>
     </div>
-    <p v-else-if="searched" class="text-center text-gray-500">No se encontraron intentos.</p>
+    <p v-else-if="searched" class="text-center text-gray-500">No access attempts found.</p>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
 import { VueGoodTable } from 'vue-good-table-next';
-import VueSelect from 'vue-select'; // Importa la versión beta
+import VueSelect from 'vue-select';
 
+/**
+ * AccessHistory view for displaying and filtering employee access attempts.
+ * Allows searching by employee and date range, and downloading results as a PDF.
+ */
 export default {
   components: {
     VueGoodTable,
@@ -68,23 +72,23 @@ export default {
   },
   data() {
     return {
-      selectedEmployee: null, // Almacena el ID del empleado seleccionado
-      employees: [], // Lista de empleados desde la API
+      selectedEmployee: null, // Stores the selected employee's ID
+      employees: [], // List of employees fetched from the API
       startDate: '',
       endDate: '',
-      attempts: [],
-      searched: false,
+      attempts: [], // List of access attempts
+      searched: false, // Indicates if a search has been performed
       columns: [
         { label: 'ID', field: 'id', sortable: true, filterable: true },
-        { label: 'ID Intentado', field: 'internal_id_attempted', sortable: true, filterable: true },
+        { label: 'Attempted ID', field: 'internal_id_attempted', sortable: true, filterable: true },
         { 
-          label: 'Acceso', 
+          label: 'Access', 
           field: 'access_granted', 
           sortable: true, 
           filterable: true,
-          formatFn: (value) => value ? 'Sí' : 'No'
+          formatFn: (value) => value ? 'Yes' : 'No' // Updated to English
         },
-        { label: 'Fecha', field: 'attempted_at', sortable: true, filterable: true },
+        { label: 'Date', field: 'attempted_at', sortable: true, filterable: true },
       ],
     };
   },
@@ -92,6 +96,10 @@ export default {
     await this.fetchEmployees();
   },
   methods: {
+    /**
+     * Fetches the list of employees from the backend API.
+     * @async
+     */
     async fetchEmployees() {
       try {
         const response = await axios.get(
@@ -102,22 +110,26 @@ export default {
         );
         this.employees = response.data.map(employee => ({
           ...employee,
-          fullName: `${employee.internal_id} - ${employee.first_name} ${employee.last_name}`, // Campo calculado
+          fullName: `${employee.internal_id} - ${employee.first_name} ${employee.last_name}`, // Calculated field
         }));
       } catch (error) {
         this.$swal({
           icon: 'error',
           title: 'Error',
-          text: 'Error al cargar la lista de empleados',
+          text: 'Error loading employee list',
         });
       }
     },
+    /**
+     * Fetches access history for the selected employee within the specified date range.
+     * @async
+     */
     async fetchHistory() {
       if (!this.selectedEmployee) {
         this.$swal({
           icon: 'warning',
-          title: 'Advertencia',
-          text: 'Por favor, selecciona un empleado',
+          title: 'Warning',
+          text: 'Please select an employee',
         });
         return;
       }
@@ -140,17 +152,21 @@ export default {
         this.$swal({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.error || 'Error al obtener historial',
+          text: error.response?.data?.error || 'Error retrieving history',
         });
         this.attempts = [];
       }
     },
+    /**
+     * Downloads a PDF of the access history for the selected employee.
+     * @async
+     */
     async downloadPdf() {
       if (!this.selectedEmployee) {
         this.$swal({
           icon: 'warning',
-          title: 'Advertencia',
-          text: 'Por favor, selecciona un empleado',
+          title: 'Warning',
+          text: 'Please select an employee',
         });
         return;
       }
@@ -171,14 +187,14 @@ export default {
         window.open(value, '_blank');
         this.$swal({
           icon: 'success',
-          title: 'Éxito',
-          text: 'PDF descargado correctamente',
+          title: 'Success',
+          text: 'PDF downloaded successfully',
         });
       } catch (error) {
         this.$swal({
           icon: 'error',
           title: 'Error',
-          text: error.response?.data?.error || 'Error al descargar PDF',
+          text: error.response?.data?.error || 'Error downloading PDF',
         });
       }
     },
@@ -187,7 +203,7 @@ export default {
 </script>
 
 <style>
-/* Ajustes básicos para vue-select */
+/* Basic adjustments for vue-select */
 .v-select {
   min-width: 100%;
 }
