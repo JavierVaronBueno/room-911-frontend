@@ -51,9 +51,9 @@
     <!-- Listado de Empleados -->
     <div class="bg-white p-6 rounded-lg shadow-lg">
       <h3 class="text-lg font-semibold mb-4">Lista de Empleados</h3>
-      <div class="mb-4">
+      <!-- <div class="mb-4">
         <input v-model="searchQuery" @input="searchEmployees" type="text" placeholder="Buscar por nombre o ID interno" class="w-full p-2 border rounded" />
-      </div>
+      </div> -->
       <vue-good-table
         :columns="columns"
         :rows="employees"
@@ -145,7 +145,7 @@ export default {
       }
 
       try {
-        const response = await axios.post(
+        await axios.post(
           'http://localhost/room-911-backend/public/api/v1/employees',
           formData,
           {
@@ -157,8 +157,8 @@ export default {
         );
         this.registerSuccess = 'Empleado registrado con éxito';
         this.registerError = '';
-        this.employees.push(response.data.employee);
         this.resetNewEmployee();
+        await this.searchEmployees(); // Refrescar la tabla
       } catch (error) {
         this.registerError = error.response?.data?.error || 'Error al registrar empleado';
         this.registerSuccess = '';
@@ -166,7 +166,7 @@ export default {
     },
     async searchEmployees() {
       try {
-        const params = this.searchQuery ? { first_name: this.searchQuery, internal_id: this.searchQuery } : {};
+        const params = this.searchQuery ? { first_name: this.searchQuery, last_name: this.searchQuery, internal_id: this.searchQuery, production_department_name: this.searchQuery, } : {};
         const response = await axios.get(
           'http://localhost/room-911-backend/public/api/v1/employees/search',
           {
