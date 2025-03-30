@@ -4,8 +4,23 @@
     <form @submit.prevent="fetchHistory" class="bg-white p-6 rounded-lg shadow-lg mb-6">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label class="block text-gray-700">ID Empleado</label>
-          <input v-model="employeeId" type="number" class="w-full p-2 border rounded" required />
+          <label class="block text-gray-700">Empleado</label>
+          <v-select
+            v-model="selectedEmployee"
+            :options="employees"
+            label="fullName"
+            :reduce="employee => employee.id"
+            placeholder="Selecciona un empleado"
+            class="w-full"
+            required
+          >
+            <template #option="{ internal_id, first_name, last_name }">
+              <span>{{ `${internal_id} - ${first_name} ${last_name}` }}</span>
+            </template>
+            <template #selected-option="{ internal_id, first_name, last_name }">
+              <span>{{ `${internal_id} - ${first_name} ${last_name}` }}</span>
+            </template>
+          </v-select>
         </div>
         <div>
           <label class="block text-gray-700">Fecha Inicio</label>
@@ -44,14 +59,17 @@
 <script>
 import axios from 'axios';
 import { VueGoodTable } from 'vue-good-table-next';
+import VueSelect from 'vue-select'; // Importa la versión beta
 
 export default {
   components: {
     VueGoodTable,
+    'v-select': VueSelect,
   },
   data() {
     return {
-      employeeId: '',
+      selectedEmployee: null, // Almacena el ID del empleado seleccionado
+      employees: [], // Lista de empleados desde la API
       startDate: '',
       endDate: '',
       attempts: [],
@@ -70,8 +88,39 @@ export default {
       ],
     };
   },
+  async created() {
+    await this.fetchEmployees();
+  },
   methods: {
+    async fetchEmployees() {
+      try {
+        const response = await axios.get(
+          'http://localhost/room-911-backend/public/api/v1/employees/search',
+          {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          }
+        );
+        this.employees = response.data.map(employee => ({
+          ...employee,
+          fullName: `${employee.internal_id} - ${employee.first_name} ${employee.last_name}`, // Campo calculado
+        }));
+      } catch (error) {
+        this.$swal({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al cargar la lista de empleados',
+        });
+      }
+    },
     async fetchHistory() {
+      if (!this.selectedEmployee) {
+        this.$swal({
+          icon: 'warning',
+          title: 'Advertencia',
+          text: 'Por favor, selecciona un empleado',
+        });
+        return;
+      }
       try {
         const params = {};
         if (this.startDate && this.endDate) {
@@ -79,7 +128,7 @@ export default {
           params.end_date = this.endDate;
         }
         const response = await axios.get(
-          `http://localhost/room-911-backend/public/api/v1/access-attempts/employee/${this.employeeId}`,
+          `http://localhost/room-911-backend/public/api/v1/access-attempts/employee/${this.selectedEmployee}`,
           {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
             params,
@@ -97,6 +146,14 @@ export default {
       }
     },
     async downloadPdf() {
+      if (!this.selectedEmployee) {
+        this.$swal({
+          icon: 'warning',
+          title: 'Advertencia',
+          text: 'Por favor, selecciona un empleado',
+        });
+        return;
+      }
       try {
         const params = {};
         if (this.startDate && this.endDate) {
@@ -104,7 +161,7 @@ export default {
           params.end_date = this.endDate;
         }
         const response = await axios.get(
-          `http://localhost/room-911-backend/public/api/v1/access-attempts/employee/${this.employeeId}/pdf`,
+          `http://localhost/room-911-backend/public/api/v1/access-attempts/employee/${this.selectedEmployee}/pdf`,
           {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
             params,
@@ -128,3 +185,18 @@ export default {
   },
 };
 </script>
+
+<style>
+/* Ajustes básicos para vue-select */
+.v-select {
+  min-width: 100%;
+}
+.vs__dropdown-toggle {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+}
+.vs__search, .vs__selected {
+  margin: 0;
+}
+</style>

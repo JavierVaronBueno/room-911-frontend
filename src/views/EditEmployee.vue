@@ -18,9 +18,22 @@
         </div>
         <div class="mb-4">
           <label class="block text-gray-700">Departamento</label>
-          <select v-model="employee.production_department_id" class="w-full p-2 border rounded" required>
-            <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
-          </select>
+          <v-select
+            v-model="employee.production_department_id"
+            :options="departments"
+            label="name"
+            :reduce="dept => dept.id"
+            placeholder="Selecciona un departamento"
+            class="w-full"
+            required
+          >
+            <template #option="{ name }">
+              <span>{{ name }}</span>
+            </template>
+            <template #selected-option="{ name }">
+              <span>{{ name }}</span>
+            </template>
+          </v-select>
         </div>
         <div class="mb-4">
           <label class="block text-gray-700">Acceso a Room 911</label>
@@ -46,8 +59,12 @@
 
 <script>
 import axios from 'axios';
+import VueSelect from 'vue-select';
 
 export default {
+  components: {
+    'v-select': VueSelect, // Registra vue-select localmente en esta vista
+  },
   data() {
     return {
       employee: {
@@ -100,6 +117,14 @@ export default {
       }
     },
     async updateEmployee() {
+      if (!this.employee.production_department_id) {
+        this.$swal({
+          icon: 'warning',
+          title: 'Advertencia',
+          text: 'Por favor, selecciona un departamento',
+        });
+        return;
+      }
       const formData = new FormData();
       formData.append('internal_id', this.employee.internal_id);
       formData.append('first_name', this.employee.first_name);
@@ -141,3 +166,18 @@ export default {
   },
 };
 </script>
+
+<style>
+/* Ajustes básicos para vue-select */
+.v-select {
+  min-width: 100%;
+}
+.vs__dropdown-toggle {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+}
+.vs__search, .vs__selected {
+  margin: 0;
+}
+</style>
