@@ -51,9 +51,15 @@
     <!-- Listado de Empleados -->
     <div class="bg-white p-6 rounded-lg shadow-lg">
       <h3 class="text-lg font-semibold mb-4">Lista de Empleados</h3>
-      <!-- <div class="mb-4">
-        <input v-model="searchQuery" @input="searchEmployees" type="text" placeholder="Buscar por nombre o ID interno" class="w-full p-2 border rounded" />
-      </div> -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-gray-700">Filtrar por Departamento</label>
+          <select v-model="departmentFilter" @change="searchEmployees" class="w-full p-2 border rounded">
+            <option value="">Todos los departamentos</option>
+            <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
+          </select>
+        </div>
+      </div>
       <vue-good-table
         :columns="columns"
         :rows="employees"
@@ -63,13 +69,13 @@
       >
         <template #table-row="props">
           <span v-if="props.column.field === 'actions'">
-            <router-link :to="`/employees/edit/${props.row.id}`" class="text-blue-600 hover:underline">Editar</router-link>
+            <router-link :to="`/employees/edit/${props.row.id}`" class="mt-4 bg-blue-800 text-white p-2 rounded hover:bg-blue-900 text-center">Editar</router-link>
           </span>
           <span v-else-if="props.column.field === 'has_room_911_access'">
             {{ props.row.has_room_911_access ? 'Sí' : 'No' }}
           </span>
           <span v-else-if="props.column.field === 'department'">
-            {{ getDepartmentName(props.row.production_department_id) }}
+            {{ props.row.production_department ? props.row.production_department.name : 'N/A' }}
           </span>
           <span v-else>
             {{ props.formattedRow[props.column.field] }}
@@ -104,6 +110,7 @@ export default {
       employees: [],
       departments: [],
       searchQuery: '',
+      departmentFilter: '',
       registerError: '',
       registerSuccess: '',
       columns: [
@@ -166,7 +173,15 @@ export default {
     },
     async searchEmployees() {
       try {
-        const params = this.searchQuery ? { first_name: this.searchQuery, last_name: this.searchQuery, internal_id: this.searchQuery, production_department_name: this.searchQuery, } : {};
+        const params = {};
+        if (this.searchQuery) {
+          params.first_name = this.searchQuery;
+          params.last_name = this.searchQuery;
+          params.internal_id = this.searchQuery;
+        }
+        if (this.departmentFilter) {
+          params.production_department_id = this.departmentFilter;
+        }
         const response = await axios.get(
           'http://localhost/room-911-backend/public/api/v1/employees/search',
           {
