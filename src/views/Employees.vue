@@ -1,7 +1,6 @@
 <template>
   <div>
     <h2 class="text-2xl font-bold mb-6 text-blue-800">Gestión de Empleados</h2>
-    <!-- Formulario de Registro -->
     <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
       <h3 class="text-lg font-semibold mb-4">Registrar Empleado</h3>
       <form @submit.prevent="registerEmployee" enctype="multipart/form-data">
@@ -34,7 +33,6 @@
             <input type="file" @change="onFileChange" accept="image/*" class="w-full p-2" />
           </div>
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button type="submit" class="mt-4 bg-blue-800 text-white p-2 rounded hover:bg-blue-900">
             Registrar
@@ -44,11 +42,8 @@
           </router-link>
         </div>
       </form>
-      <p v-if="registerError" class="text-red-500 mt-4">{{ registerError }}</p>
-      <p v-if="registerSuccess" class="text-green-500 mt-4">{{ registerSuccess }}</p>
     </div>
 
-    <!-- Listado de Empleados -->
     <div class="bg-white p-6 rounded-lg shadow-lg">
       <h3 class="text-lg font-semibold mb-4">Lista de Empleados</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -111,8 +106,6 @@ export default {
       departments: [],
       searchQuery: '',
       departmentFilter: '',
-      registerError: '',
-      registerSuccess: '',
       columns: [
         { label: 'ID', field: 'id', sortable: true, filterable: true },
         { label: 'ID Interno', field: 'internal_id', sortable: true, filterable: true },
@@ -137,7 +130,11 @@ export default {
         );
         this.departments = response.data;
       } catch (error) {
-        console.error('Error fetching departments:', error);
+        this.$swal({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al cargar departamentos',
+        });
       }
     },
     async registerEmployee() {
@@ -162,13 +159,19 @@ export default {
             },
           }
         );
-        this.registerSuccess = 'Empleado registrado con éxito';
-        this.registerError = '';
+        this.$swal({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Empleado registrado con éxito',
+        });
         this.resetNewEmployee();
-        await this.searchEmployees(); // Refrescar la tabla
+        await this.searchEmployees();
       } catch (error) {
-        this.registerError = error.response?.data?.error || 'Error al registrar empleado';
-        this.registerSuccess = '';
+        this.$swal({
+          icon: 'error',
+          title: 'Error',
+          text: error.response?.data?.error || 'Error al registrar empleado',
+        });
       }
     },
     async searchEmployees() {
@@ -191,7 +194,11 @@ export default {
         );
         this.employees = response.data;
       } catch (error) {
-        this.registerError = error.response?.data?.error || 'Error al buscar empleados';
+        this.$swal({
+          icon: 'error',
+          title: 'Error',
+          text: error.response?.data?.error || 'Error al buscar empleados',
+        });
       }
     },
     onFileChange(event) {
@@ -206,10 +213,6 @@ export default {
         has_room_911_access: false,
         photo: null,
       };
-    },
-    getDepartmentName(id) {
-      const dept = this.departments.find(d => d.id === id);
-      return dept ? dept.name : 'N/A';
     },
   },
 };

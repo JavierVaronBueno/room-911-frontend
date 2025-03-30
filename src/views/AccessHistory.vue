@@ -38,7 +38,6 @@
       </vue-good-table>
     </div>
     <p v-else-if="searched" class="text-center text-gray-500">No se encontraron intentos.</p>
-    <p v-if="error" class="text-red-500 mt-4 text-center">{{ error }}</p>
   </div>
 </template>
 
@@ -57,7 +56,6 @@ export default {
       endDate: '',
       attempts: [],
       searched: false,
-      error: '',
       columns: [
         { label: 'ID', field: 'id', sortable: true, filterable: true },
         { label: 'ID Intentado', field: 'internal_id_attempted', sortable: true, filterable: true },
@@ -89,9 +87,12 @@ export default {
         );
         this.attempts = response.data;
         this.searched = true;
-        this.error = '';
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al obtener historial';
+        this.$swal({
+          icon: 'error',
+          title: 'Error',
+          text: error.response?.data?.error || 'Error al obtener historial',
+        });
         this.attempts = [];
       }
     },
@@ -111,8 +112,17 @@ export default {
         );
         const [key, value] = response.data.download_url.split('=');
         window.open(value, '_blank');
+        this.$swal({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'PDF descargado correctamente',
+        });
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al descargar PDF';
+        this.$swal({
+          icon: 'error',
+          title: 'Error',
+          text: error.response?.data?.error || 'Error al descargar PDF',
+        });
       }
     },
   },

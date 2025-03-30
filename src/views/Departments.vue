@@ -24,7 +24,6 @@
         </template>
       </vue-good-table>
     </div>
-    <p v-if="error" class="text-red-500 mt-4 text-center">{{ error }}</p>
   </div>
 </template>
 
@@ -40,7 +39,6 @@ export default {
     return {
       name: '',
       departments: [],
-      error: '',
       columns: [
         { label: 'ID', field: 'id', sortable: true, filterable: true },
         { label: 'Nombre', field: 'name', sortable: true, filterable: true },
@@ -59,7 +57,11 @@ export default {
         );
         this.departments = response.data;
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al obtener departamentos';
+        this.$swal({
+          icon: 'error',
+          title: 'Error',
+          text: error.response?.data?.error || 'Error al obtener departamentos',
+        });
       }
     },
     async createDepartment() {
@@ -71,9 +73,17 @@ export default {
         );
         this.departments.push(response.data.department);
         this.name = '';
-        this.error = '';
+        this.$swal({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Departamento creado correctamente',
+        });
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al crear departamento';
+        this.$swal({
+          icon: 'error',
+          title: 'Error',
+          text: error.response?.data?.error || 'Error al crear departamento',
+        });
       }
     },
   },

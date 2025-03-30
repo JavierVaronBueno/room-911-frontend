@@ -13,7 +13,6 @@
     <p v-if="result" class="mt-4 text-center" :class="result.status === 'Access Granted' ? 'text-green-500' : 'text-red-500'">
       {{ result.status }}
     </p>
-    <p v-if="error" class="mt-4 text-red-500 text-center">{{ error }}</p>
   </div>
 </template>
 
@@ -25,7 +24,6 @@ export default {
     return {
       internalId: '',
       result: null,
-      error: '',
     };
   },
   methods: {
@@ -37,9 +35,17 @@ export default {
           { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
         );
         this.result = response.data;
-        this.error = '';
+        this.$swal({
+          icon: response.data.status === 'Access Granted' ? 'success' : 'error',
+          title: response.data.status === 'Access Granted' ? 'Acceso Concedido' : 'Acceso Denegado',
+          text: response.data.status,
+        });
       } catch (error) {
-        this.error = error.response?.data?.error || 'Error al simular acceso';
+        this.$swal({
+          icon: 'error',
+          title: 'Error',
+          text: error.response?.data?.error || 'Error al simular acceso',
+        });
         this.result = null;
       }
     },
