@@ -5,6 +5,8 @@ import AccessSimulation from '../views/AccessSimulation.vue';
 import AccessHistory from '../views/AccessHistory.vue';
 import Departments from '../views/Departments.vue';
 import Employees from '../views/Employees.vue';
+import EditEmployee from '../views/EditEmployee.vue';
+import BulkUploadEmployees from '../views/BulkUploadEmployees.vue'; 
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -14,6 +16,8 @@ const routes = [
   { path: '/access-history', name: 'AccessHistory', component: AccessHistory, meta: { requiresAuth: true } },
   { path: '/departments', name: 'Departments', component: Departments, meta: { requiresAuth: true } },
   { path: '/employees', name: 'Employees', component: Employees, meta: { requiresAuth: true } },
+  { path: '/employees/edit/:id', name: 'EditEmployee', component: EditEmployee, meta: { requiresAuth: true } },
+  { path: '/employees/bulk', name: 'BulkUploadEmployees', component: BulkUploadEmployees, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

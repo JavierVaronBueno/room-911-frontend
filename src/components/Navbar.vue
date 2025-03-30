@@ -7,6 +7,7 @@
         <router-link to="/access-history" class="hover:underline">Historial</router-link>
         <router-link to="/departments" class="hover:underline">Departamentos</router-link>
         <router-link to="/employees" class="hover:underline">Empleados</router-link>
+        <router-link to="/employees/bulk" class="hover:underline">Carga Masiva</router-link>
         <button @click="logout" class="hover:underline">Cerrar Sesión</button>
       </div>
     </div>
