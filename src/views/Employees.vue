@@ -1,6 +1,5 @@
 <template>
-  
-<div>
+  <div>
     <h2 class="text-2xl font-bold mb-6 text-blue-800">Gestión de Empleados</h2>
     <!-- Formulario de Registro -->
     <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
@@ -45,7 +44,6 @@
           </router-link>
         </div>
       </form>
-
       <p v-if="registerError" class="text-red-500 mt-4">{{ registerError }}</p>
       <p v-if="registerSuccess" class="text-green-500 mt-4">{{ registerSuccess }}</p>
     </div>
@@ -56,39 +54,43 @@
       <div class="mb-4">
         <input v-model="searchQuery" @input="searchEmployees" type="text" placeholder="Buscar por nombre o ID interno" class="w-full p-2 border rounded" />
       </div>
-      <table v-if="employees.length" class="w-full border-collapse">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="border p-2">ID</th>
-            <th class="border p-2">ID Interno</th>
-            <th class="border p-2">Nombre</th>
-            <th class="border p-2">Departamento</th>
-            <th class="border p-2">Acceso</th>
-            <th class="border p-2">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="employee in employees" :key="employee.id">
-            <td class="border p-2">{{ employee.id }}</td>
-            <td class="border p-2">{{ employee.internal_id }}</td>
-            <td class="border p-2">{{ employee.first_name }} {{ employee.last_name }}</td>
-            <td class="border p-2">{{ getDepartmentName(employee.production_department_id) }}</td>
-            <td class="border p-2">{{ employee.has_room_911_access ? 'Sí' : 'No' }}</td>
-            <td class="border p-2">
-              <router-link :to="`/employees/edit/${employee.id}`" class="text-blue-600 hover:underline">Editar</router-link>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-else class="text-gray-500 text-center">No hay empleados para mostrar.</p>
+      <vue-good-table
+        :columns="columns"
+        :rows="employees"
+        :pagination-options="{ enabled: true, perPage: 5 }"
+        :search-options="{ enabled: true }"
+        :sort-options="{ enabled: true }"
+      >
+        <template #table-row="props">
+          <span v-if="props.column.field === 'actions'">
+            <router-link :to="`/employees/edit/${props.row.id}`" class="text-blue-600 hover:underline">Editar</router-link>
+          </span>
+          <span v-else-if="props.column.field === 'has_room_911_access'">
+            {{ props.row.has_room_911_access ? 'Sí' : 'No' }}
+          </span>
+          <span v-else-if="props.column.field === 'department'">
+            {{ getDepartmentName(props.row.production_department_id) }}
+          </span>
+          <span v-else>
+            {{ props.formattedRow[props.column.field] }}
+          </span>
+        </template>
+        <template #emptystate>
+          No hay empleados para mostrar.
+        </template>
+      </vue-good-table>
     </div>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
+import { VueGoodTable } from 'vue-good-table-next';
 
 export default {
+  components: {
+    VueGoodTable,
+  },
   data() {
     return {
       newEmployee: {
@@ -104,6 +106,15 @@ export default {
       searchQuery: '',
       registerError: '',
       registerSuccess: '',
+      columns: [
+        { label: 'ID', field: 'id', sortable: true, filterable: true },
+        { label: 'ID Interno', field: 'internal_id', sortable: true, filterable: true },
+        { label: 'Nombre', field: 'first_name', sortable: true, filterable: true },
+        { label: 'Apellido', field: 'last_name', sortable: true, filterable: true },
+        { label: 'Departamento', field: 'department', sortable: true, filterable: true },
+        { label: 'Acceso', field: 'has_room_911_access', sortable: true, filterable: true },
+        { label: 'Acciones', field: 'actions', sortable: false, filterable: false },
+      ],
     };
   },
   async created() {

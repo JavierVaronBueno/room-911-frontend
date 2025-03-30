@@ -11,40 +11,44 @@
       </button>
     </form>
 
-    <div v-if="departments.length" class="bg-white p-6 rounded-lg shadow-lg">
-      <table class="w-full border-collapse">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="border p-2">ID</th>
-            <th class="border p-2">Nombre</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="dept in departments" :key="dept.id">
-            <td class="border p-2">{{ dept.id }}</td>
-            <td class="border p-2">{{ dept.name }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+      <vue-good-table
+        :columns="columns"
+        :rows="departments"
+        :pagination-options="{ enabled: true, perPage: 5 }"
+        :search-options="{ enabled: true }"
+        :sort-options="{ enabled: true }"
+      >
+        <template #emptystate>
+          No hay departamentos.
+        </template>
+      </vue-good-table>
     </div>
-    <p v-else class="text-center text-gray-500">No hay departamentos.</p>
     <p v-if="error" class="text-red-500 mt-4 text-center">{{ error }}</p>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
+import { VueGoodTable } from 'vue-good-table-next';
 
 export default {
+  components: {
+    VueGoodTable,
+  },
   data() {
     return {
       name: '',
       departments: [],
       error: '',
+      columns: [
+        { label: 'ID', field: 'id', sortable: true, filterable: true },
+        { label: 'Nombre', field: 'name', sortable: true, filterable: true },
+      ],
     };
   },
   async created() {
-    this.fetchDepartments();
+    await this.fetchDepartments();
   },
   methods: {
     async fetchDepartments() {

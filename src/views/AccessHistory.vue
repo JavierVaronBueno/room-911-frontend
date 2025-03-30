@@ -25,24 +25,17 @@
     </form>
 
     <div v-if="attempts.length" class="bg-white p-6 rounded-lg shadow-lg">
-      <table class="w-full border-collapse">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="border p-2">ID</th>
-            <th class="border p-2">ID Intentado</th>
-            <th class="border p-2">Acceso</th>
-            <th class="border p-2">Fecha</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="attempt in attempts" :key="attempt.id">
-            <td class="border p-2">{{ attempt.id }}</td>
-            <td class="border p-2">{{ attempt.internal_id_attempted }}</td>
-            <td class="border p-2">{{ attempt.access_granted ? 'Sí' : 'No' }}</td>
-            <td class="border p-2">{{ attempt.attempted_at }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <vue-good-table
+        :columns="columns"
+        :rows="attempts"
+        :pagination-options="{ enabled: true, perPage: 5 }"
+        :search-options="{ enabled: true }"
+        :sort-options="{ enabled: true }"
+      >
+        <template #emptystate>
+          No se encontraron intentos.
+        </template>
+      </vue-good-table>
     </div>
     <p v-else-if="searched" class="text-center text-gray-500">No se encontraron intentos.</p>
     <p v-if="error" class="text-red-500 mt-4 text-center">{{ error }}</p>
@@ -51,8 +44,12 @@
 
 <script>
 import axios from 'axios';
+import { VueGoodTable } from 'vue-good-table-next';
 
 export default {
+  components: {
+    VueGoodTable,
+  },
   data() {
     return {
       employeeId: '',
@@ -61,6 +58,18 @@ export default {
       attempts: [],
       searched: false,
       error: '',
+      columns: [
+        { label: 'ID', field: 'id', sortable: true, filterable: true },
+        { label: 'ID Intentado', field: 'internal_id_attempted', sortable: true, filterable: true },
+        { 
+          label: 'Acceso', 
+          field: 'access_granted', 
+          sortable: true, 
+          filterable: true,
+          formatFn: (value) => value ? 'Sí' : 'No'
+        },
+        { label: 'Fecha', field: 'attempted_at', sortable: true, filterable: true },
+      ],
     };
   },
   methods: {
@@ -100,7 +109,8 @@ export default {
             params,
           }
         );
-        window.open(response.data.download_url, '_blank');
+        const [key, value] = response.data.download_url.split('=');
+        window.open(value, '_blank');
       } catch (error) {
         this.error = error.response?.data?.error || 'Error al descargar PDF';
       }
