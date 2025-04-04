@@ -59,24 +59,20 @@
     <div class="bg-white p-6 rounded-lg shadow-lg">
       <h3 class="text-lg font-semibold mb-4">Employee List</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-gray-700">Filter by Department</label>
-          <v-select
-            v-model="departmentFilter"
-            :options="departmentsWithAll"
-            label="name"
-            :reduce="dept => dept.id"
-            placeholder="All departments"
-            class="w-full"
-            @input="searchEmployees"
-          >
-            <template #option="{ name }">
-              <span>{{ name }}</span>
-            </template>
-            <template #selected-option="{ name }">
-              <span>{{ name }}</span>
-            </template>
-          </v-select>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-gray-700">Filter by Department</label>
+            <select
+              v-model="departmentFilter"
+              @change="searchEmployees"
+              class="w-full p-2 border rounded"
+            >
+              <option value="">All departments</option>
+              <option v-for="dept in departments" :key="dept.id" :value="dept.id">
+                {{ dept.name }}
+              </option>
+            </select>
+          </div>
         </div>
       </div>
       <vue-good-table
@@ -234,7 +230,8 @@ export default {
           params.last_name = this.searchQuery;
           params.internal_id = this.searchQuery;
         }
-        if (this.departmentFilter) {
+        // Solo agregar el filtro de departamento si tiene un valor
+        if (this.departmentFilter !== '' && this.departmentFilter !== null) {
           params.production_department_id = this.departmentFilter;
         }
         const response = await axios.get(
